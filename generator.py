@@ -36,4 +36,28 @@ def generate_response(query, retrieved_chunks):
         )
 
     # Your implementation here.
-    return "⚙️ Response generation not yet implemented. Complete Milestone 3 to activate answers."
+    context = ""
+    for chunk in retrieved_chunks:
+        context += f"[{chunk['game']}]\n{chunk['text']}\n\n"
+
+    response = _client.chat.completions.create(
+        model=LLM_MODEL,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a board game rules assistant. "
+                    "Answer using only the rule text provided below. "
+                    "If the answer is not contained in the provided text, say so explicitly — "
+                    "do not draw on outside knowledge or fill in gaps from what you know about board games. "
+                    "Always state which game the rule comes from."
+                )
+            },
+            {
+                "role": "user",
+                "content": f"Question: {query}\n\nRule text:\n{context}"
+            }
+        ]
+    )
+
+    return response.choices[0].message.content
